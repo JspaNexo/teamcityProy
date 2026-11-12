@@ -1,0 +1,8 @@
+﻿services:
+  applicationdemo:
+    image: applicationdemo
+    build:
+      context: .
+      dockerfile: ApplicationDemo/Dockerfile
+    ports:
+      - "8080:8080"

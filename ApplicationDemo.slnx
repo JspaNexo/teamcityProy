@@ -1,0 +1,8 @@
+<Solution>
+  <Folder Name="/Solution Items/">
+    <File Path="compose.yaml" />
+    <File Path=".teamcity/settings.kts" />
+  </Folder>
+  <Project Path="ApplicationDemo/ApplicationDemo.csproj" />
+  <Project Path="ApplicationDemo.Tests/ApplicationDemo.Tests.csproj" />
+</Solution>
