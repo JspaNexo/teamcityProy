@@ -1,0 +1,208 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="TituloAplicacion" xml:space="preserve">
+    <value>FARMACORP POS EXPRESS</value>
+  </data>
+  <data name="Separador" xml:space="preserve">
+    <value>==================================================</value>
+  </data>
+  <data name="EstrategiaVigente" xml:space="preserve">
+    <value>Estrategia vigente: {0}</value>
+  </data>
+  <data name="EstrategiaFueraVigencia" xml:space="preserve">
+    <value>GanaMax está seleccionada pero fuera de vigencia ({0} a {1}); se aplican las reglas Base.</value>
+  </data>
+  <data name="SinLimite" xml:space="preserve">
+    <value>sin límite</value>
+  </data>
+  <data name="MenuRegistrarProducto" xml:space="preserve">
+    <value>1. Registrar nuevo producto ERP</value>
+  </data>
+  <data name="MenuAsignarCodigoBarra" xml:space="preserve">
+    <value>2. Asignar código de barras</value>
+  </data>
+  <data name="MenuAsignarCategoria" xml:space="preserve">
+    <value>3. Asignar categoría a producto</value>
+  </data>
+  <data name="MenuRegistrarVenta" xml:space="preserve">
+    <value>4. Registrar venta</value>
+  </data>
+  <data name="MenuListarProductos" xml:space="preserve">
+    <value>5. Listar productos</value>
+  </data>
+  <data name="MenuListarVentas" xml:space="preserve">
+    <value>6. Listar ventas</value>
+  </data>
+  <data name="MenuCambiarEstrategia" xml:space="preserve">
+    <value>7. Cambiar estrategia (Base / GanaMax)</value>
+  </data>
+  <data name="MenuSalir" xml:space="preserve">
+    <value>0. Salir</value>
+  </data>
+  <data name="SolicitarOpcion" xml:space="preserve">
+    <value>Seleccione una opción: </value>
+  </data>
+  <data name="OpcionInvalida" xml:space="preserve">
+    <value>Opción inválida.</value>
+  </data>
+  <data name="PresioneTecla" xml:space="preserve">
+    <value>Presione una tecla para continuar...</value>
+  </data>
+  <data name="ValorInvalido" xml:space="preserve">
+    <value>Valor inválido, intente nuevamente.</value>
+  </data>
+  <data name="ValorObligatorio" xml:space="preserve">
+    <value>El valor es obligatorio.</value>
+  </data>
+  <data name="TituloRegistrarProducto" xml:space="preserve">
+    <value>REGISTRO DE NUEVO PRODUCTO ERP</value>
+  </data>
+  <data name="TituloAsignarCodigoBarra" xml:space="preserve">
+    <value>ASIGNACIÓN DE CÓDIGO DE BARRAS</value>
+  </data>
+  <data name="TituloAsignarCategoria" xml:space="preserve">
+    <value>ASIGNACIÓN DE CATEGORÍA</value>
+  </data>
+  <data name="TituloRegistrarVenta" xml:space="preserve">
+    <value>REGISTRO DE VENTA</value>
+  </data>
+  <data name="TituloListarProductos" xml:space="preserve">
+    <value>PRODUCTOS</value>
+  </data>
+  <data name="TituloListarVentas" xml:space="preserve">
+    <value>ÚLTIMAS VENTAS</value>
+  </data>
+  <data name="TituloCambiarEstrategia" xml:space="preserve">
+    <value>CAMBIO DE ESTRATEGIA</value>
+  </data>
+  <data name="SolicitarNombre" xml:space="preserve">
+    <value>Nombre: </value>
+  </data>
+  <data name="SolicitarCosto" xml:space="preserve">
+    <value>Costo: </value>
+  </data>
+  <data name="SolicitarStock" xml:space="preserve">
+    <value>Stock inicial: </value>
+  </data>
+  <data name="SolicitarFechaVencimiento" xml:space="preserve">
+    <value>Fecha de vencimiento (dd/MM/yyyy): </value>
+  </data>
+  <data name="SolicitarObservaciones" xml:space="preserve">
+    <value>Observaciones (opcional): </value>
+  </data>
+  <data name="SolicitarTipoProducto" xml:space="preserve">
+    <value>Id del tipo de producto: </value>
+  </data>
+  <data name="SolicitarIdProducto" xml:space="preserve">
+    <value>Id del producto: </value>
+  </data>
+  <data name="SolicitarIdCategoria" xml:space="preserve">
+    <value>Id de la categoría: </value>
+  </data>
+  <data name="SolicitarCantidad" xml:space="preserve">
+    <value>Cantidad: </value>
+  </data>
+  <data name="SolicitarCliente" xml:space="preserve">
+    <value>Cliente (opcional): </value>
+  </data>
+  <data name="SolicitarEstrategia" xml:space="preserve">
+    <value>Número de estrategia: </value>
+  </data>
+  <data name="TiposProductoDisponibles" xml:space="preserve">
+    <value>Tipos de producto:</value>
+  </data>
+  <data name="CategoriasDisponibles" xml:space="preserve">
+    <value>Categorías:</value>
+  </data>
+  <data name="FormatoTipoProducto" xml:space="preserve">
+    <value>  {0} - {1}</value>
+  </data>
+  <data name="FormatoCategoria" xml:space="preserve">
+    <value>  {0,-10} {1,-20} {2,-9} {3}</value>
+  </data>
+  <data name="EstadoActiva" xml:space="preserve">
+    <value>Activa</value>
+  </data>
+  <data name="EstadoInactiva" xml:space="preserve">
+    <value>Inactiva</value>
+  </data>
+  <data name="FormatoOpcionEstrategia" xml:space="preserve">
+    <value>  {0}. {1}</value>
+  </data>
+  <data name="ProductoRegistrado" xml:space="preserve">
+    <value>Producto registrado (estrategia {0}).
+  Id: {1}
+  Costo: {2:N2}
+  Precio: {3:N2}
+  UniqueCodigo: {4}
+  Stock: {5}</value>
+  </data>
+  <data name="CodigoBarraAsignado" xml:space="preserve">
+    <value>Código de barras asignado.
+  Id: {0}
+  Producto: {1}
+  UniqueCodigo: {2}</value>
+  </data>
+  <data name="CategoriaAsignada" xml:space="preserve">
+    <value>Categoría asignada.
+  Id detalle: {0}
+  Producto: {1}
+  Categoría: {2}
+  Total de categorías del producto: {3}</value>
+  </data>
+  <data name="VentaRegistrada" xml:space="preserve">
+    <value>Venta registrada (estrategia {0}).
+  Id: {1}
+  Producto: {2}
+  UniqueProducto: {3}
+  Cantidad: {4} x {5:N2} = {6:N2}
+  Descuento: {7:N2}
+  Total: {8:N2}
+  Stock restante: {9}</value>
+  </data>
+  <data name="EncabezadoProductos" xml:space="preserve">
+    <value>Id|Nombre|Precio|Costo|Stock|CB|UniqueCodigo|Categorías</value>
+  </data>
+  <data name="FormatoProducto" xml:space="preserve">
+    <value>{0,-4} {1,-25} {2,9:N2} {3,9:N2} {4,6} {5,3} {6,-36} {7}</value>
+  </data>
+  <data name="EncabezadoVentas" xml:space="preserve">
+    <value>Id|Fecha|Cliente|Producto|Cant.|Precio|Desc.|Total|UniqueProducto</value>
+  </data>
+  <data name="FormatoVenta" xml:space="preserve">
+    <value>{0,-4} {1,-16} {2,-15} {3,-25} {4,5} {5,9:N2} {6,9:N2} {7,10:N2} {8}</value>
+  </data>
+  <data name="SinRegistros" xml:space="preserve">
+    <value>No hay registros.</value>
+  </data>
+  <data name="ValorNoDisponible" xml:space="preserve">
+    <value>-</value>
+  </data>
+  <data name="EstrategiaCambiada" xml:space="preserve">
+    <value>Estrategia seleccionada: {0}.</value>
+  </data>
+  <data name="ErrorReglaNegocio" xml:space="preserve">
+    <value>[{0}] {1}</value>
+  </data>
+  <data name="ErrorInesperado" xml:space="preserve">
+    <value>Error inesperado: {0}</value>
+  </data>
+  <data name="CadenaConexionNoConfigurada" xml:space="preserve">
+    <value>No se configuró la cadena de conexión '{0}'.</value>
+  </data>
+  <data name="InicializandoBaseDatos" xml:space="preserve">
+    <value>Inicializando base de datos...</value>
+  </data>
+</root>

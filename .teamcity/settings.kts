@@ -12,6 +12,9 @@ import jetbrains.buildServer.configs.kotlin.triggers.vcs
  * Pipeline:
  *   1. BuildAndTest  -> compila la solución, ejecuta las pruebas y publica el artefacto.
  *   2. DockerImage   -> construye la imagen Docker (depende de BuildAndTest).
+ *
+ * Práctica 06 (Farmacorp POS Express):
+ *   PosExpressBuildAndTest -> compila la solución N-Capas, ejecuta las pruebas y publica la consola.
  */
 
 version = "2024.12"
@@ -24,7 +27,54 @@ project {
         buildType(BuildAndTest)
         buildType(DockerImage)
     }.buildTypes().forEach { buildType(it) }
+
+    buildType(PosExpressBuildAndTest)
 }
+
+object PosExpressBuildAndTest : BuildType({
+    name = "POS Express - Build y Test"
+
+    buildNumberPattern = "1.0.%build.counter%"
+    artifactRules = "Farmacorp.PosExpress/publish => Farmacorp.PosExpress-%build.number%.zip"
+
+    params {
+        param("configuration", "Release")
+    }
+
+    vcs {
+        root(DslContext.settingsRoot)
+        cleanCheckout = true
+    }
+
+    steps {
+        dotnetBuild {
+            name = "Compilar"
+            projects = "Farmacorp.PosExpress/Farmacorp.PosExpress.slnx"
+            configuration = "%configuration%"
+            args = "-p:Version=%build.number%"
+        }
+        dotnetTest {
+            name = "Pruebas"
+            projects = "Farmacorp.PosExpress/Farmacorp.PosExpress.slnx"
+            configuration = "%configuration%"
+            skipBuild = true
+        }
+        dotnetPublish {
+            name = "Publicar consola"
+            projects = "Farmacorp.PosExpress/Farmacorp.PosExpress.Presentacion/Farmacorp.PosExpress.Presentacion.csproj"
+            configuration = "%configuration%"
+            outputDir = "Farmacorp.PosExpress/publish"
+            args = "-p:Version=%build.number%"
+        }
+    }
+
+    triggers {
+        vcs {
+            branchFilter = "+:<default>"
+            triggerRules = "+:Farmacorp.PosExpress/**"
+        }
+    }
+})
 
 object BuildAndTest : BuildType({
     name = "Build y Test"

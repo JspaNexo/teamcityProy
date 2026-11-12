@@ -1,0 +1,24 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <ItemGroup>
+        <PackageReference Include="Microsoft.Extensions.Options.ConfigurationExtensions" Version="$(ExtensionsVersion)" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\Farmacorp.PosExpress.Datos\Farmacorp.PosExpress.Datos.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <EmbeddedResource Update="Recursos\Mensajes.resx">
+            <StronglyTypedFileName>$(IntermediateOutputPath)Mensajes.Designer.cs</StronglyTypedFileName>
+            <StronglyTypedLanguage>CSharp</StronglyTypedLanguage>
+            <StronglyTypedNamespace>Farmacorp.PosExpress.Negocio.Recursos</StronglyTypedNamespace>
+            <StronglyTypedClassName>Mensajes</StronglyTypedClassName>
+        </EmbeddedResource>
+    </ItemGroup>
+
+    <ItemGroup>
+        <InternalsVisibleTo Include="Farmacorp.PosExpress.Pruebas" />
+    </ItemGroup>
+
+</Project>

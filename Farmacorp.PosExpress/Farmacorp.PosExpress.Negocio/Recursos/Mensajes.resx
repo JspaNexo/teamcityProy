@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="CampoNombre" xml:space="preserve">
+    <value>Nombre</value>
+  </data>
+  <data name="CampoObservaciones" xml:space="preserve">
+    <value>Observaciones</value>
+  </data>
+  <data name="CampoCliente" xml:space="preserve">
+    <value>Cliente</value>
+  </data>
+  <data name="NombreObligatorio" xml:space="preserve">
+    <value>El nombre del producto es obligatorio.</value>
+  </data>
+  <data name="LongitudExcedida" xml:space="preserve">
+    <value>El campo {0} no puede superar {1} caracteres.</value>
+  </data>
+  <data name="CostoInvalido" xml:space="preserve">
+    <value>El costo debe ser mayor a cero.</value>
+  </data>
+  <data name="StockInicialInvalido" xml:space="preserve">
+    <value>El stock inicial no puede ser negativo.</value>
+  </data>
+  <data name="FechaVencimientoInvalida" xml:space="preserve">
+    <value>La fecha de vencimiento debe ser posterior a la fecha actual.</value>
+  </data>
+  <data name="TipoProductoNoExiste" xml:space="preserve">
+    <value>No existe el tipo de producto {0}.</value>
+  </data>
+  <data name="ProductoNoExiste" xml:space="preserve">
+    <value>No existe el producto con Id {0}.</value>
+  </data>
+  <data name="ProductoInactivo" xml:space="preserve">
+    <value>El producto {0} está inactivo.</value>
+  </data>
+  <data name="ProductoSinErp" xml:space="preserve">
+    <value>El producto {0} no está registrado en el módulo ERP.</value>
+  </data>
+  <data name="CategoriaObligatoria" xml:space="preserve">
+    <value>El Id de la categoría es obligatorio.</value>
+  </data>
+  <data name="CategoriaNoExiste" xml:space="preserve">
+    <value>No existe la categoría '{0}'.</value>
+  </data>
+  <data name="CategoriaInactiva" xml:space="preserve">
+    <value>La categoría '{0}' está inactiva.</value>
+  </data>
+  <data name="CategoriaYaAsignada" xml:space="preserve">
+    <value>El producto {0} ya tiene asignada la categoría '{1}'.</value>
+  </data>
+  <data name="CantidadInvalida" xml:space="preserve">
+    <value>La cantidad debe ser mayor a cero.</value>
+  </data>
+  <data name="StockInsuficiente" xml:space="preserve">
+    <value>Stock insuficiente para '{0}'. Disponible: {1}, solicitado: {2}.</value>
+  </data>
+  <data name="StockMinimoGanaMax" xml:space="preserve">
+    <value>Estrategia GanaMax: la venta de '{0}' dejaría {1} unidades en stock y debe quedar por encima de {2}.</value>
+  </data>
+</root>

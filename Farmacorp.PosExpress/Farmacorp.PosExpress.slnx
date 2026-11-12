@@ -1,0 +1,11 @@
+<Solution>
+  <Folder Name="/Solution Items/">
+    <File Path="Directory.Build.props" />
+    <File Path="README.md" />
+  </Folder>
+  <Project Path="Farmacorp.PosExpress.Entidades/Farmacorp.PosExpress.Entidades.csproj" />
+  <Project Path="Farmacorp.PosExpress.Datos/Farmacorp.PosExpress.Datos.csproj" />
+  <Project Path="Farmacorp.PosExpress.Negocio/Farmacorp.PosExpress.Negocio.csproj" />
+  <Project Path="Farmacorp.PosExpress.Presentacion/Farmacorp.PosExpress.Presentacion.csproj" />
+  <Project Path="Farmacorp.PosExpress.Pruebas/Farmacorp.PosExpress.Pruebas.csproj" />
+</Solution>

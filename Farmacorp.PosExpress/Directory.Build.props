@@ -1,0 +1,15 @@
+<Project>
+
+    <PropertyGroup>
+        <TargetFramework>net10.0</TargetFramework>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+        <RootNamespace>$(MSBuildProjectName)</RootNamespace>
+    </PropertyGroup>
+
+    <PropertyGroup>
+        <EntityFrameworkVersion>10.0.15</EntityFrameworkVersion>
+        <ExtensionsVersion>10.0.15</ExtensionsVersion>
+    </PropertyGroup>
+
+</Project>
