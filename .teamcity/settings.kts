@@ -17,7 +17,7 @@ import jetbrains.buildServer.configs.kotlin.triggers.vcs
  *   PosExpressBuildAndTest -> compila la solución N-Capas, ejecuta las pruebas y publica la consola.
  */
 
-version = "2024.12"
+version = "2026.2"
 
 project {
     description = "App demo .NET 10 para practicar CI con TeamCity"
