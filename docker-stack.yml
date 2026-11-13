@@ -1,0 +1,36 @@
+# Despliegue de ApplicationDemo en Docker Swarm.
+#
+#   docker stack deploy -c docker-stack.yml applicationdemo
+#
+# Swarm no construye imágenes: applicationdemo:<TAG> debe existir en cada nodo (o en un registro).
+# TAG elige la versión a desplegar; por defecto, latest.
+
+version: "3.8"
+
+services:
+  api:
+    image: applicationdemo:${TAG:-latest}
+    ports:
+      - "8080:8080"
+    environment:
+      ASPNETCORE_ENVIRONMENT: Production
+    deploy:
+      replicas: 3
+      # Actualización gradual: levanta la réplica nueva, espera su healthcheck y recién entonces baja la anterior
+      update_config:
+        parallelism: 1
+        delay: 10s
+        order: start-first
+        monitor: 30s
+        failure_action: rollback
+      rollback_config:
+        parallelism: 1
+        order: start-first
+      restart_policy:
+        condition: on-failure
+        max_attempts: 3
+        window: 30s
+      resources:
+        limits:
+          cpus: "0.50"
+          memory: 256M

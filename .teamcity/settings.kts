@@ -4,14 +4,16 @@ import jetbrains.buildServer.configs.kotlin.buildSteps.dockerCommand
 import jetbrains.buildServer.configs.kotlin.buildSteps.dotnetBuild
 import jetbrains.buildServer.configs.kotlin.buildSteps.dotnetPublish
 import jetbrains.buildServer.configs.kotlin.buildSteps.dotnetTest
+import jetbrains.buildServer.configs.kotlin.buildSteps.script
 import jetbrains.buildServer.configs.kotlin.triggers.vcs
 
 /*
  * Configuración de TeamCity para ApplicationDemo (Kotlin DSL / Versioned Settings).
  *
  * Pipeline:
- *   1. BuildAndTest  -> compila la solución, ejecuta las pruebas y publica el artefacto.
- *   2. DockerImage   -> construye la imagen Docker (depende de BuildAndTest).
+ *   1. BuildAndTest    -> compila la solución, ejecuta las pruebas y publica el artefacto.
+ *   2. DockerImage     -> construye la imagen Docker (depende de BuildAndTest).
+ *   3. DesplegarSwarm  -> despliega esa imagen en el Docker Swarm del agente (manual).
  *
  * Práctica 06 (Farmacorp POS Express):
  *   PosExpressBuildAndTest -> compila la solución N-Capas, ejecuta las pruebas y publica la consola.
@@ -22,10 +24,11 @@ version = "2026.2"
 project {
     description = "App demo .NET 10 para practicar CI con TeamCity"
 
-    // sequential crea la dependencia snapshot DockerImage -> BuildAndTest
+    // sequential crea las dependencias snapshot DesplegarSwarm -> DockerImage -> BuildAndTest
     sequential {
         buildType(BuildAndTest)
         buildType(DockerImage)
+        buildType(DesplegarSwarm)
     }.buildTypes().forEach { buildType(it) }
 
     buildType(PosExpressBuildAndTest)
@@ -116,6 +119,8 @@ object BuildAndTest : BuildType({
     triggers {
         vcs {
             branchFilter = "+:<default>"
+            // Los cambios de POS Express los compila su propia configuración
+            triggerRules = "-:Farmacorp.PosExpress/**"
         }
     }
 
@@ -147,6 +152,40 @@ object DockerImage : BuildType({
                 """.trimIndent()
                 commandArgs = "--pull"
             }
+        }
+    }
+
+    requirements {
+        exists("docker.server.version")
+    }
+})
+
+/*
+ * Despliega en el Swarm del agente la imagen construida por DockerImage (misma versión).
+ * Sin trigger: se ejecuta a mano y TeamCity corre antes Build y Test e Imagen Docker.
+ * Requisito: el Docker del agente debe ser manager de un Swarm ("docker swarm init" una vez).
+ * Sin registro de imágenes solo sirve si DockerImage corrió en el mismo agente.
+ */
+object DesplegarSwarm : BuildType({
+    name = "Despliegue Swarm"
+
+    buildNumberPattern = "${DockerImage.depParamRefs.buildNumber}"
+
+    params {
+        param("swarm.stack", "applicationdemo")
+        // docker-stack.yml toma la etiqueta de la imagen de la variable de entorno TAG
+        param("env.TAG", "%build.number%")
+    }
+
+    vcs {
+        root(DslContext.settingsRoot)
+    }
+
+    steps {
+        script {
+            name = "docker stack deploy"
+            // --detach=false espera a que las réplicas converjan: si el rolling update falla, el build falla
+            scriptContent = "docker stack deploy --detach=false -c docker-stack.yml %swarm.stack%"
         }
     }
 

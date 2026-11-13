@@ -9,7 +9,9 @@ app.MapGet("/", () => Results.Ok(new
 {
     app = "ApplicationDemo",
     version = typeof(Program).Assembly.GetName().Version?.ToString(),
-    entorno = app.Environment.EnvironmentName
+    entorno = app.Environment.EnvironmentName,
+    // En un contenedor es el id del contenedor: permite ver qué réplica del Swarm respondió
+    instancia = Environment.MachineName
 }));
 
 app.MapGet("/health", () => Results.Ok(new { status = "Healthy" }));
