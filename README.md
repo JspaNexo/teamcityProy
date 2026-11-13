@@ -44,18 +44,35 @@ TAG=1.0.5 docker stack deploy --detach=false -c docker-stack.yml applicationdemo
 docker service rollback applicationdemo_api
 ```
 
+Desplegar una versión publicada por TeamCity en el registro local en vez de la imagen local:
+
+```bash
+IMAGEN=localhost:5000/applicationdemo TAG=1.0.5 docker stack deploy --detach=false -c docker-stack.yml applicationdemo
+# PowerShell: $env:IMAGEN="localhost:5000/applicationdemo"; $env:TAG="1.0.5"; docker stack deploy ...
+curl http://localhost:5000/v2/applicationdemo/tags/list                            # versiones publicadas
+```
+
 Limpiar: `docker stack rm applicationdemo` y, si ya no se usará Swarm, `docker swarm leave --force`.
 
 Swarm no construye imágenes: en un Swarm de varios nodos la imagen debe estar en un registro
-(Docker Hub, GHCR, etc.) para que todos los nodos puedan descargarla.
+accesible para todos los nodos.
 
 ## TeamCity
 
 La configuración está en `.teamcity/settings.kts` (Kotlin DSL):
 
-1. **Build y Test**: compila, ejecuta pruebas (los resultados aparecen en la pestaña *Tests*) y publica el artefacto `ApplicationDemo-<versión>.zip`. Se dispara con cada commit a la rama por defecto. Número de build: `1.0.<contador>`.
-2. **Imagen Docker**: construye `applicationdemo:<versión>` y `applicationdemo:latest`. Corre después de *Build y Test* y solo en agentes con Docker.
-3. **Despliegue Swarm**: despliega `applicationdemo:<versión>` con `docker-stack.yml`. Se ejecuta a mano (TeamCity corre antes las dos anteriores) y requiere que el Docker del agente sea manager de un Swarm (`docker swarm init`).
+1. **Build y Test**: compila, ejecuta pruebas (los resultados aparecen en la pestaña *Tests*) y publica el artefacto `ApplicationDemo-<versión>.zip`. Se dispara con cada commit a `main` y a `develop`. Número de build: `1.0.<contador>`.
+2. **Imagen Docker Staging**: se dispara sola cuando *Build y Test* termina bien en `develop`, y cada paso tiene la condición `teamcity.build.branch equals develop`:
+   1. *Docker Build Staging*: construye `localhost:5000/applicationdemo:<versión>` (`%env.APP_IMAGE_BUILD_NUMBER%`).
+   2. *Docker Push Staging*: la sube al registro local de TeamCity y borra la imagen del agente.
+   3. *Replace Staging Swarm Tokens*: `scripts/reemplazar-tokens-swarm.sh` genera `docker-stack.Temp.yml` con la imagen y la versión reemplazadas, y lo publica como artefacto.
+3. **Despliegue Swarm Staging**: se ejecuta a mano sobre `develop`. Descarga el `docker-stack.Temp.yml` de esa versión y lo despliega con `docker stack deploy`. Requiere que el Docker del agente sea manager de un Swarm (`docker swarm init`).
+
+El registro es el contenedor `registry:2` del entorno de TeamCity, publicado en `localhost:5000`; no necesita cuenta ni credenciales.
+
+### Rama develop
+
+Para que TeamCity vea `develop`, la VCS root del proyecto debe incluirla: *Edit Project → VCS Roots → (la raíz del repo) → Branch specification*, agrega `+:refs/heads/develop`.
 
 Pasos para conectarlo:
 

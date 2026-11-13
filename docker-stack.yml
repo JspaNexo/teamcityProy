@@ -2,14 +2,17 @@
 #
 #   docker stack deploy -c docker-stack.yml applicationdemo
 #
-# Swarm no construye imágenes: applicationdemo:<TAG> debe existir en cada nodo (o en un registro).
-# TAG elige la versión a desplegar; por defecto, latest.
+# Swarm no construye imágenes: la imagen debe estar en un registro o existir en cada nodo.
+#   IMAGEN: repositorio de la imagen; por defecto, applicationdemo (imagen local).
+#           TeamCity usa la del registro local: localhost:5000/applicationdemo.
+#   TAG:    versión a desplegar; por defecto, latest.
+# En TeamCity, scripts/reemplazar-tokens-swarm.sh genera docker-stack.Temp.yml con ambos valores ya reemplazados.
 
 version: "3.8"
 
 services:
   api:
-    image: applicationdemo:${TAG:-latest}
+    image: ${IMAGEN:-applicationdemo}:${TAG:-latest}
     ports:
       - "8080:8080"
     environment:

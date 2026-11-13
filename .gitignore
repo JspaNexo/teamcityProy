@@ -4,5 +4,7 @@ obj/
 riderModule.iml
 /_ReSharper.Caches/
 .idea/
+# Archivo Swarm generado por scripts/reemplazar-tokens-swarm.sh
+docker-stack.Temp.yml
 # Salida de dotnet publish
 publish/

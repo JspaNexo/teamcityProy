@@ -1,0 +1,2 @@
+# Los scripts de Bash corren en el agente Linux de TeamCity: siempre con saltos de línea LF
+*.sh text eol=lf
