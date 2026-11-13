@@ -30,6 +30,9 @@
   <data name="CostoInvalido" xml:space="preserve">
     <value>El costo debe ser mayor a cero.</value>
   </data>
+  <data name="CostoDecimalesExcedidos" xml:space="preserve">
+    <value>El costo admite como máximo {0} decimales.</value>
+  </data>
   <data name="StockInicialInvalido" xml:space="preserve">
     <value>El stock inicial no puede ser negativo.</value>
   </data>
@@ -68,5 +71,8 @@
   </data>
   <data name="StockMinimoGanaMax" xml:space="preserve">
     <value>Estrategia GanaMax: la venta de '{0}' dejaría {1} unidades en stock y debe quedar por encima de {2}.</value>
+  </data>
+  <data name="StockModificadoConcurrencia" xml:space="preserve">
+    <value>El stock de '{0}' fue modificado por otra operación mientras se registraba la venta. Intente nuevamente.</value>
   </data>
 </root>

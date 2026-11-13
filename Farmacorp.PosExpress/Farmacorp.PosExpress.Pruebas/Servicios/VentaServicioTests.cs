@@ -74,6 +74,25 @@ public class VentaServicioTests
     }
 
     [Fact]
+    public async Task Registrar_StockModificadoPorOtraCaja_RechazaVentaSinPerderLaOtraActualizacion()
+    {
+        using var escenario = new EscenarioPruebas();
+
+        // El contexto principal queda con el stock leído al registrar (20)
+        var producto = await escenario.RegistrarProductoAsync(stock: 20);
+
+        // Otra caja vende 5 unidades y deja el stock en 15
+        await escenario.CrearVentaServicioOtraCaja().RegistrarAsync(new NuevaVenta(producto.IdProducto, 5, null));
+
+        // La primera caja aún ve 20: sin control de concurrencia sobrescribiría el stock con 15 en vez de 10
+        var excepcion = await Assert.ThrowsAsync<ReglaNegocioException>(
+            () => escenario.VentaServicio.RegistrarAsync(new NuevaVenta(producto.IdProducto, 5, null)));
+
+        Assert.Equal(CodigosError.CONFLICTO_CONCURRENCIA, excepcion.Codigo);
+        Assert.Equal(15, (await escenario.ObtenerErpAsync(producto.IdProducto)).Stock);
+    }
+
+    [Fact]
     public async Task Registrar_EstrategiaBase_PermiteVenderTodoElStock()
     {
         using var escenario = new EscenarioPruebas();

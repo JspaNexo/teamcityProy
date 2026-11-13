@@ -22,5 +22,8 @@ public interface IUnitOfWork
 
     IVentaExpressRepositorio VentasExpress { get; }
 
+    /// <exception cref="ConflictoConcurrenciaException">
+    /// Otra operación modificó un dato con control de concurrencia (por ejemplo, el stock) después de leerlo.
+    /// </exception>
     Task<int> GuardarCambiosAsync(CancellationToken cancelacion = default);
 }

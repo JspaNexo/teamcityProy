@@ -3,5 +3,6 @@ obj/
 /packages/
 riderModule.iml
 /_ReSharper.Caches/
+.idea/
 # Salida de dotnet publish
 publish/

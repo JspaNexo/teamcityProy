@@ -1,6 +1,7 @@
 using Farmacorp.PosExpress.Datos.Contratos;
 using Farmacorp.PosExpress.Datos.Repositorios;
 using Farmacorp.PosExpress.Entidades;
+using Microsoft.EntityFrameworkCore;
 
 namespace Farmacorp.PosExpress.Datos;
 
@@ -42,9 +43,16 @@ public class UnitOfWork : IUnitOfWork
     public IVentaExpressRepositorio VentasExpress =>
         _ventasExpress ??= new VentaExpressRepositorio(_contexto);
 
-    public Task<int> GuardarCambiosAsync(CancellationToken cancelacion = default)
+    public async Task<int> GuardarCambiosAsync(CancellationToken cancelacion = default)
     {
-        // SaveChanges confirma todas las operaciones pendientes en una sola transacción
-        return _contexto.SaveChangesAsync(cancelacion);
+        try
+        {
+            // SaveChanges confirma todas las operaciones pendientes en una sola transacción
+            return await _contexto.SaveChangesAsync(cancelacion);
+        }
+        catch (DbUpdateConcurrencyException excepcion)
+        {
+            throw new ConflictoConcurrenciaException(excepcion);
+        }
     }
 }

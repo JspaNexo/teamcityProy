@@ -20,16 +20,19 @@ public sealed class EscenarioPruebas : IDisposable
 
     public static readonly DateTime FechaActual = new(2026, 12, 15, 10, 0, 0);
 
+    private readonly DbContextOptions<PosExpressContexto> _opciones;
+    private readonly TiempoFijo _tiempo = new(FechaActual);
+    private readonly List<PosExpressContexto> _contextosAdicionales = [];
+
     public EscenarioPruebas(TiposEstrategia estrategia = TiposEstrategia.Base)
     {
-        var opciones = new DbContextOptionsBuilder<PosExpressContexto>()
+        _opciones = new DbContextOptionsBuilder<PosExpressContexto>()
             .UseInMemoryDatabase(Guid.NewGuid().ToString())
             .Options;
 
-        Contexto = new PosExpressContexto(opciones);
+        Contexto = new PosExpressContexto(_opciones);
         Contexto.Database.EnsureCreated();
 
-        var tiempo = new TiempoFijo(FechaActual);
         var unidadTrabajo = new UnitOfWork(Contexto);
         var generadorCodigo = new GeneradorCodigo();
 
@@ -37,12 +40,12 @@ public sealed class EscenarioPruebas : IDisposable
             new ReglasNegocioBase(),
             new ReglasNegocioGanaMax(),
             Options.Create(new ConfiguracionEstrategia { Tipo = estrategia }),
-            tiempo);
+            _tiempo);
 
-        ProductoServicio = new ProductoServicio(unidadTrabajo, Selector, generadorCodigo, tiempo);
+        ProductoServicio = new ProductoServicio(unidadTrabajo, Selector, generadorCodigo, _tiempo);
         CodigoBarraServicio = new CodigoBarraServicio(unidadTrabajo, generadorCodigo);
-        CategoriaServicio = new CategoriaServicio(unidadTrabajo, tiempo);
-        VentaServicio = new VentaServicio(unidadTrabajo, Selector, tiempo);
+        CategoriaServicio = new CategoriaServicio(unidadTrabajo, _tiempo);
+        VentaServicio = new VentaServicio(unidadTrabajo, Selector, _tiempo);
     }
 
     public PosExpressContexto Contexto { get; }
@@ -79,8 +82,25 @@ public sealed class EscenarioPruebas : IDisposable
         return await Contexto.ErpProductos.AsNoTracking().SingleAsync(erp => erp.IdProducto == idProducto);
     }
 
+    /// <summary>
+    /// Crea un servicio de ventas con su propio contexto sobre la misma base de datos,
+    /// para simular otra caja operando en paralelo.
+    /// </summary>
+    public VentaServicio CrearVentaServicioOtraCaja()
+    {
+        var contexto = new PosExpressContexto(_opciones);
+        _contextosAdicionales.Add(contexto);
+
+        return new VentaServicio(new UnitOfWork(contexto), Selector, _tiempo);
+    }
+
     public void Dispose()
     {
+        foreach (var contexto in _contextosAdicionales)
+        {
+            contexto.Dispose();
+        }
+
         Contexto.Dispose();
     }
 }

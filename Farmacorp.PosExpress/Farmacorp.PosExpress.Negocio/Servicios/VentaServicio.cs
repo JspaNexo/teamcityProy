@@ -65,7 +65,17 @@ public class VentaServicio : IVentaServicio
         erpProducto.Stock -= nuevaVenta.Cantidad;
 
         await _unidadTrabajo.VentasExpress.AgregarAsync(venta, cancelacion);
-        await _unidadTrabajo.GuardarCambiosAsync(cancelacion);
+
+        try
+        {
+            await _unidadTrabajo.GuardarCambiosAsync(cancelacion);
+        }
+        catch (ConflictoConcurrenciaException)
+        {
+            // Otra venta cambió el stock después de validarlo (RN4): se rechaza para no vender stock inexistente
+            throw new ReglaNegocioException(
+                CodigosError.CONFLICTO_CONCURRENCIA, Mensajes.StockModificadoConcurrencia, producto.Nombre);
+        }
 
         return new VentaRegistrada(
             venta.Id,

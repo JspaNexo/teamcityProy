@@ -30,8 +30,11 @@ public class ErpProductoConfiguracion : IEntityTypeConfiguration<ErpProducto>
             .IsRequired()
             .HasColumnType(TiposColumna.FECHA_HORA);
 
+        // Concurrencia optimista: el UPDATE incluye el stock leído en el WHERE, así dos ventas
+        // simultáneas del mismo producto no pueden pisarse ni vender stock inexistente
         builder.Property(erp => erp.Stock)
-            .IsRequired();
+            .IsRequired()
+            .IsConcurrencyToken();
 
         builder.HasOne(erp => erp.ExpProducto)
             .WithOne(producto => producto.ErpProducto)

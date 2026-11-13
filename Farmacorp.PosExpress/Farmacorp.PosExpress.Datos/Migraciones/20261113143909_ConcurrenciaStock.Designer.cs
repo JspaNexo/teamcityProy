@@ -4,6 +4,7 @@ using Farmacorp.PosExpress.Datos;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Farmacorp.PosExpress.Datos.Migraciones
 {
     [DbContext(typeof(PosExpressContexto))]
-    partial class PosExpressContextoModelSnapshot : ModelSnapshot
+    [Migration("20261113143909_ConcurrenciaStock")]
+    partial class ConcurrenciaStock
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -137,6 +140,7 @@ namespace Farmacorp.PosExpress.Datos.Migraciones
                         .HasColumnType("datetime");
 
                     b.Property<int>("Stock")
+                        .IsConcurrencyToken()
                         .HasColumnType("int");
 
                     b.Property<Guid>("UniqueCodigo")

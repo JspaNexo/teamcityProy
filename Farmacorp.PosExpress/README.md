@@ -31,13 +31,13 @@ Conceptos aplicados:
 | Transacción | Regla | Base | GanaMax |
 |---|---|---|---|
 | 1. Registro nuevo producto ERP | UniqueCodigo autogenerado | GUID v7 | igual |
-| | RN1: precio = costo + margen | 50% | **80%** |
+| | RN1: precio = costo + margen (costo con máximo 2 decimales) | 50% | **80%** |
 | 2. Asignación de código de barras | UniqueCodigo autogenerado | GUID v7 | igual |
 | 3. Asignación de categorías | Sin duplicados, solo categorías activas | ✓ | igual |
 | 4. Registro de venta (un producto) | RN2: guarda UniqueCodigo del producto en `UniqueProducto` | ✓ | igual |
 | | RN3: descuento si y solo si tiene una única categoría | 30% | **10%** |
 | | RN4: stock disponible | stock ≥ cantidad | **y stock restante > 10** |
-| | RN5: descuenta el stock en ErpProductos (misma transacción) | ✓ | igual |
+| | RN5: descuenta el stock en ErpProductos (misma transacción, con concurrencia optimista sobre `Stock`) | ✓ | igual |
 
 `ReglasNegocioGanaMax` hereda de `ReglasNegocioBase` y solo sobrescribe lo que cambia, así que las reglas
 no especificadas se mantienen como en Base.

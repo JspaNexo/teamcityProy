@@ -59,6 +59,29 @@ public class ProductoServicioTests
     }
 
     [Theory]
+    [InlineData(10.555)]
+    [InlineData(0.001)]
+    public async Task Registrar_CostoConMasDeDosDecimales_LanzaExcepcion(decimal costo)
+    {
+        using var escenario = new EscenarioPruebas();
+
+        var excepcion = await Assert.ThrowsAsync<ReglaNegocioException>(
+            () => escenario.ProductoServicio.RegistrarAsync(EscenarioPruebas.CrearNuevoProducto(costo: costo)));
+
+        Assert.Equal(CodigosError.DATO_INVALIDO, excepcion.Codigo);
+    }
+
+    [Fact]
+    public async Task Registrar_CostoConCerosDecimalesExtra_EsValido()
+    {
+        using var escenario = new EscenarioPruebas();
+
+        var registrado = await escenario.ProductoServicio.RegistrarAsync(EscenarioPruebas.CrearNuevoProducto(costo: 10.500m));
+
+        Assert.Equal(15.75m, registrado.Precio);
+    }
+
+    [Theory]
     [InlineData(0)]
     [InlineData(-10)]
     public async Task Registrar_CostoInvalido_LanzaExcepcion(decimal costo)

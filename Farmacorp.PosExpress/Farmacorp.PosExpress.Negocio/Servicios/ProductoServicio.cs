@@ -118,6 +118,14 @@ public class ProductoServicio : IProductoServicio
             throw new ReglaNegocioException(CodigosError.DATO_INVALIDO, Mensajes.CostoInvalido);
         }
 
+        // El costo se guarda como decimal(12,2): con más decimales el precio (RN1) se calcularía
+        // sobre un valor distinto al que queda registrado
+        if (decimal.Round(nuevoProducto.Costo, ConfiguracionDecimales.ESCALA) != nuevoProducto.Costo)
+        {
+            throw new ReglaNegocioException(
+                CodigosError.DATO_INVALIDO, Mensajes.CostoDecimalesExcedidos, ConfiguracionDecimales.ESCALA);
+        }
+
         if (nuevoProducto.Stock < 0)
         {
             throw new ReglaNegocioException(CodigosError.DATO_INVALIDO, Mensajes.StockInicialInvalido);
