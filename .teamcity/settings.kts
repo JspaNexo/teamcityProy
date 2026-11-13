@@ -15,7 +15,7 @@ import jetbrains.buildServer.configs.kotlin.triggers.vcs
  *   1. BuildAndTest    -> compila la solución, ejecuta las pruebas y publica el artefacto (main y develop).
  *   2. DockerImage     -> Staging, solo en develop: construye la imagen, la sube al registro local
  *                         y genera docker-stack.Temp.yml con los tokens reemplazados.
- *   3. DesplegarSwarm  -> despliega docker-stack.Temp.yml en el Docker Swarm del agente (manual, sobre develop).
+ *   3. DesplegarSwarm  -> despliega en el Docker Swarm del agente el último build correcto de Staging (manual).
  *
  * Práctica 06 (Farmacorp POS Express):
  *   PosExpressBuildAndTest -> compila la solución N-Capas, ejecuta las pruebas y publica la consola.
@@ -209,14 +209,13 @@ object DockerImage : BuildType({
 })
 
 /*
- * Despliega en el Swarm del agente el docker-stack.Temp.yml generado por DockerImage (misma versión).
- * Sin trigger: se ejecuta a mano sobre develop. Requisito: el Docker del agente debe ser manager
- * de un Swarm ("docker swarm init" una vez).
+ * Despliega en el Swarm del agente la última versión publicada en Staging: toma el docker-stack.Temp.yml
+ * del último build correcto de DockerImage en develop, sin importar la rama elegida al pulsar Run.
+ * Sin trigger: se ejecuta a mano. Requisito: el Docker del agente debe ser manager de un Swarm
+ * ("docker swarm init" una vez).
  */
 object DesplegarSwarm : BuildType({
     name = "Despliegue Swarm Staging"
-
-    buildNumberPattern = "${DockerImage.depParamRefs.buildNumber}"
 
     params {
         param("swarm.stack", "applicationdemo")
@@ -229,20 +228,18 @@ object DesplegarSwarm : BuildType({
     steps {
         script {
             name = "docker stack deploy"
-            conditions {
-                equals("teamcity.build.branch", Ramas.STAGING)
-            }
-            // --detach=false espera a que las réplicas converjan: si el rolling update falla, el build falla
-            scriptContent = "docker stack deploy --detach=false -c despliegue/docker-stack.Temp.yml %swarm.stack%"
+            // El script numera el build con la versión desplegada (lee la imagen del archivo)
+            scriptContent = "bash scripts/desplegar-swarm.sh despliegue/docker-stack.Temp.yml %swarm.stack%"
         }
     }
 
     dependencies {
-        dependency(DockerImage) {
-            snapshot { }
-            artifacts {
-                artifactRules = "docker-stack.Temp.yml => despliegue"
-            }
+        // Solo dependencia de artefactos, filtrada a develop: no hay dependencia snapshot,
+        // así que no reconstruye nada ni depende de la rama con la que se lance
+        artifacts(DockerImage) {
+            buildRule = lastSuccessful("+:${Ramas.STAGING}")
+            cleanDestination = true
+            artifactRules = "docker-stack.Temp.yml => despliegue"
         }
     }
 

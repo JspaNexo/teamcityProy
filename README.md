@@ -66,7 +66,7 @@ La configuración está en `.teamcity/settings.kts` (Kotlin DSL):
    1. *Docker Build Staging*: construye `localhost:5000/applicationdemo:<versión>` (`%env.APP_IMAGE_BUILD_NUMBER%`).
    2. *Docker Push Staging*: la sube al registro local de TeamCity y borra la imagen del agente.
    3. *Replace Staging Swarm Tokens*: `scripts/reemplazar-tokens-swarm.sh` genera `docker-stack.Temp.yml` con la imagen y la versión reemplazadas, y lo publica como artefacto.
-3. **Despliegue Swarm Staging**: se ejecuta a mano sobre `develop`. Descarga el `docker-stack.Temp.yml` de esa versión y lo despliega con `docker stack deploy`. Requiere que el Docker del agente sea manager de un Swarm (`docker swarm init`).
+3. **Despliegue Swarm Staging**: se ejecuta a mano, desde cualquier rama. Descarga el `docker-stack.Temp.yml` del último build correcto de *Imagen Docker Staging* en `develop` y lo despliega con `scripts/desplegar-swarm.sh`; el número del build es la versión desplegada. Requiere que el Docker del agente sea manager de un Swarm (`docker swarm init`).
 
 El registro es el contenedor `registry:2` del entorno de TeamCity, publicado en `localhost:5000`; no necesita cuenta ni credenciales.
 
@@ -78,7 +78,7 @@ El `*` importa: TeamCity usa como nombre lógico de la rama la parte que coincid
 comparan la condición `teamcity.build.branch equals develop` y los triggers. Con `+:refs/heads/develop` (sin `*`)
 el nombre sería `refs/heads/develop` y los pasos de Staging se saltarían.
 
-Al lanzar un build a mano, elige la rama `develop` en el diálogo *Run*: la rama por defecto es `main`.
+*Despliegue Swarm Staging* no depende de la rama elegida: siempre toma lo último publicado en `develop`.
 
 Pasos para conectarlo:
 
