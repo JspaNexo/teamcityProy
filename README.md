@@ -72,7 +72,13 @@ El registro es el contenedor `registry:2` del entorno de TeamCity, publicado en 
 
 ### Rama develop
 
-Para que TeamCity vea `develop`, la VCS root del proyecto debe incluirla: *Edit Project → VCS Roots → (la raíz del repo) → Branch specification*, agrega `+:refs/heads/develop`.
+Para que TeamCity vea `develop`, la VCS root del proyecto debe incluirla: *Edit Project → VCS Roots → (la raíz del repo) → Branch specification*: `+:refs/heads/*`.
+
+El `*` importa: TeamCity usa como nombre lógico de la rama la parte que coincide con el `*` (`develop`), que es lo que
+comparan la condición `teamcity.build.branch equals develop` y los triggers. Con `+:refs/heads/develop` (sin `*`)
+el nombre sería `refs/heads/develop` y los pasos de Staging se saltarían.
+
+Al lanzar un build a mano, elige la rama `develop` en el diálogo *Run*: la rama por defecto es `main`.
 
 Pasos para conectarlo:
 
