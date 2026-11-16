@@ -171,7 +171,8 @@ object DockerImage : BuildType({
                 }
                 contextDir = "."
                 namesAndTags = "%env.APP_IMAGE_BUILD_NUMBER%"
-                commandArgs = "--pull"
+                // VERSION: el ensamblado lleva la misma versión que el tag, así GET / muestra la versión desplegada
+                commandArgs = "--pull --build-arg VERSION=%env.TAG%"
             }
         }
         dockerCommand {
@@ -211,7 +212,7 @@ object DockerImage : BuildType({
 /*
  * Despliega en el Swarm del agente la última versión publicada en Staging: toma el docker-stack.Temp.yml
  * del último build correcto de DockerImage en develop, sin importar la rama elegida al pulsar Run.
- * Sin trigger: se ejecuta a mano. Requisito: el Docker del agente debe ser manager de un Swarm
+ * Sin trigger: se ejecuta manual. Requisito: el Docker del agente debe ser manager de un Swarm
  * ("docker swarm init" una vez).
  */
 object DesplegarSwarm : BuildType({

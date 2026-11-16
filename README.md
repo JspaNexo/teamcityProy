@@ -1,6 +1,14 @@
 # ApplicationDemo
 
-API mínima en .NET 10 para practicar CI/CD con TeamCity.
+API mínima en .NET 10 para practicar CI/CD con TeamCity: cada push a `develop` se compila, se prueba y se publica
+como imagen Docker en un registro local, lista para desplegarse en Docker Swarm con 3 réplicas.
+
+![CI/CD y Docker Swarm de ApplicationDemo](docs/arquitectura_cicd_swarm.drawio.png)
+
+El diagrama se edita con draw.io (`docs/arquitectura_cicd_swarm.drawio`).
+
+El repositorio incluye además [Farmacorp POS Express](Farmacorp.PosExpress/README.md) (Práctica 06): una solución
+N-Capas independiente, con su propia configuración de build en TeamCity.
 
 ## Endpoints
 
@@ -40,9 +48,13 @@ docker service scale applicationdemo_api=5                           # escalar
 Actualizar a otra versión (rolling update) y volver atrás:
 
 ```bash
+docker build -t applicationdemo:1.0.5 --build-arg VERSION=1.0.5 -f ApplicationDemo/Dockerfile .
 TAG=1.0.5 docker stack deploy --detach=false -c docker-stack.yml applicationdemo   # PowerShell: $env:TAG="1.0.5"; docker stack deploy ...
+curl http://localhost:8080/                                                        # "version" pasa a 1.0.5.0 réplica por réplica
 docker service rollback applicationdemo_api
 ```
+
+`--build-arg VERSION` fija la versión del ensamblado, que es la que devuelve `GET /`; sin él la imagen reporta `1.0.0.0`.
 
 Desplegar una versión publicada por TeamCity en el registro local en vez de la imagen local:
 
@@ -63,12 +75,27 @@ La configuración está en `.teamcity/settings.kts` (Kotlin DSL):
 
 1. **Build y Test**: compila, ejecuta pruebas (los resultados aparecen en la pestaña *Tests*) y publica el artefacto `ApplicationDemo-<versión>.zip`. Se dispara con cada commit a `main` y a `develop`. Número de build: `1.0.<contador>`.
 2. **Imagen Docker Staging**: se dispara sola cuando *Build y Test* termina bien en `develop`, y cada paso tiene la condición `teamcity.build.branch equals develop`:
-   1. *Docker Build Staging*: construye `localhost:5000/applicationdemo:<versión>` (`%env.APP_IMAGE_BUILD_NUMBER%`).
+   1. *Docker Build Staging*: construye `localhost:5000/applicationdemo:<versión>` (`%env.APP_IMAGE_BUILD_NUMBER%`) con `--build-arg VERSION=<versión>`, para que `GET /` devuelva la versión desplegada.
    2. *Docker Push Staging*: la sube al registro local de TeamCity y borra la imagen del agente.
    3. *Replace Staging Swarm Tokens*: `scripts/reemplazar-tokens-swarm.sh` genera `docker-stack.Temp.yml` con la imagen y la versión reemplazadas, y lo publica como artefacto.
 3. **Despliegue Swarm Staging**: se ejecuta a mano, desde cualquier rama. Descarga el `docker-stack.Temp.yml` del último build correcto de *Imagen Docker Staging* en `develop` y lo despliega con `scripts/desplegar-swarm.sh`; el número del build es la versión desplegada. Requiere que el Docker del agente sea manager de un Swarm (`docker swarm init`).
+4. **POS Express - Build y Test**: compila `Farmacorp.PosExpress/Farmacorp.PosExpress.slnx`, ejecuta sus pruebas y publica la consola como `Farmacorp.PosExpress-<versión>.zip`. Se dispara solo con cambios dentro de `Farmacorp.PosExpress/` en `main`; *Build y Test* ignora esa carpeta.
 
-El registro es el contenedor `registry:2` del entorno de TeamCity, publicado en `localhost:5000`; no necesita cuenta ni credenciales.
+### Entorno
+
+El pipeline está probado con TeamCity 2026.2.1 sobre Docker Desktop, con tres contenedores (su compose no forma parte de este repositorio):
+
+| Contenedor | Imagen | Acceso |
+|---|---|---|
+| `teamcity-server` | `jetbrains/teamcity-server:2026.2.1` | `http://localhost:8111` |
+| `teamcity-agent` | agente de TeamCity con .NET SDK 10, Docker CLI y Bash | — |
+| `registry` | `registry:2` | `localhost:5000`, sin cuenta ni credenciales |
+
+El agente monta `/var/run/docker.sock` y usa la red del host: construye y despliega con el Docker de la máquina, así que
+`localhost:5000` es el mismo registro para el agente y para el Swarm, y `docker stack deploy` despliega en el Swarm de ese
+mismo Docker.
+
+Antes de una demostración, comprueba con `docker ps` que los tres contenedores estén arriba: sin el agente los builds se quedan en cola.
 
 ### Rama develop
 

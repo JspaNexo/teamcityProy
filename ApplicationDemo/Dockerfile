@@ -14,11 +14,15 @@ COPY ["ApplicationDemo/ApplicationDemo.csproj", "ApplicationDemo/"]
 RUN dotnet restore "ApplicationDemo/ApplicationDemo.csproj"
 COPY . .
 WORKDIR "/src/ApplicationDemo"
-RUN dotnet build "./ApplicationDemo.csproj" -c $BUILD_CONFIGURATION -o /app/build
+# Versión del ensamblado: es la que devuelve GET /. TeamCity pasa el número de build (--build-arg VERSION=1.0.7);
+# se declara después del restore para no invalidar esa capa en cada versión
+ARG VERSION=1.0.0
+RUN dotnet build "./ApplicationDemo.csproj" -c $BUILD_CONFIGURATION -o /app/build -p:Version=$VERSION
 
 FROM build AS publish
 ARG BUILD_CONFIGURATION=Release
-RUN dotnet publish "./ApplicationDemo.csproj" -c $BUILD_CONFIGURATION -o /app/publish /p:UseAppHost=false
+ARG VERSION=1.0.0
+RUN dotnet publish "./ApplicationDemo.csproj" -c $BUILD_CONFIGURATION -o /app/publish /p:UseAppHost=false -p:Version=$VERSION
 
 FROM base AS final
 WORKDIR /app
