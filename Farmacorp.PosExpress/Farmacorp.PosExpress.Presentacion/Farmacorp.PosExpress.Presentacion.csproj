@@ -21,6 +21,8 @@
 
     <ItemGroup>
         <EmbeddedResource Update="Recursos\Textos.resx">
+            <!-- MSBuild:Compile hace que el IDE genere Textos.Designer.cs en su build de diseño; sin esto solo existe tras compilar -->
+            <Generator>MSBuild:Compile</Generator>
             <StronglyTypedFileName>$(IntermediateOutputPath)Textos.Designer.cs</StronglyTypedFileName>
             <StronglyTypedLanguage>CSharp</StronglyTypedLanguage>
             <StronglyTypedNamespace>Farmacorp.PosExpress.Presentacion.Recursos</StronglyTypedNamespace>
