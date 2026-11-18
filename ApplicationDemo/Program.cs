@@ -1,4 +1,5 @@
-﻿using ApplicationDemo.Services;
+﻿using System.Reflection;
+using ApplicationDemo.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddSingleton<ProductoService>();
@@ -8,7 +9,8 @@ var app = builder.Build();
 app.MapGet("/", () => Results.Ok(new
 {
     app = "ApplicationDemo",
-    version = typeof(Program).Assembly.GetName().Version?.ToString(),
+    // InformationalVersion es la de -p:Version tal cual (1.0.7); GetName().Version la completaría a 4 partes (1.0.7.0)
+    version = typeof(Program).Assembly.GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion,
     entorno = app.Environment.EnvironmentName,
     // En un contenedor es el id del contenedor: permite ver qué réplica del Swarm respondió
     instancia = Environment.MachineName

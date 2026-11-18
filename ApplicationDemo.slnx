@@ -1,10 +1,4 @@
 <Solution>
-  <Folder Name="/Farmacorp.PosExpress/">
-    <Project Path="Farmacorp.PosExpress/Farmacorp.PosExpress.Datos/Farmacorp.PosExpress.Datos.csproj" />
-    <Project Path="Farmacorp.PosExpress/Farmacorp.PosExpress.Entidades/Farmacorp.PosExpress.Entidades.csproj" />
-    <Project Path="Farmacorp.PosExpress/Farmacorp.PosExpress.Negocio/Farmacorp.PosExpress.Negocio.csproj" />
-    <Project Path="Farmacorp.PosExpress/Farmacorp.PosExpress.Presentacion/Farmacorp.PosExpress.Presentacion.csproj" />
-  </Folder>
   <Folder Name="/Solution Items/">
     <File Path="compose.yaml" />
     <File Path="docker-stack.yml" />

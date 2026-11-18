@@ -8,19 +8,17 @@ WORKDIR /app
 EXPOSE 8080
 
 FROM mcr.microsoft.com/dotnet/sdk:10.0 AS build
-ARG BUILD_CONFIGURATION=Release
 WORKDIR /src
 COPY ["ApplicationDemo/ApplicationDemo.csproj", "ApplicationDemo/"]
 RUN dotnet restore "ApplicationDemo/ApplicationDemo.csproj"
 COPY . .
 WORKDIR "/src/ApplicationDemo"
-# Versión del ensamblado: es la que devuelve GET /. TeamCity pasa el número de build (--build-arg VERSION=1.0.7);
-# se declara después del restore para no invalidar esa capa en cada versión
-ARG VERSION=1.0.0
-RUN dotnet build "./ApplicationDemo.csproj" -c $BUILD_CONFIGURATION -o /app/build -p:Version=$VERSION
 
+# dotnet publish compila y publica en un solo paso
 FROM build AS publish
 ARG BUILD_CONFIGURATION=Release
+# Versión que devuelve GET /. TeamCity pasa el número de build (--build-arg VERSION=1.0.7);
+# se declara después del restore para no invalidar esa capa en cada versión
 ARG VERSION=1.0.0
 RUN dotnet publish "./ApplicationDemo.csproj" -c $BUILD_CONFIGURATION -o /app/publish /p:UseAppHost=false -p:Version=$VERSION
 

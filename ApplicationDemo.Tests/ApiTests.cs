@@ -1,5 +1,6 @@
 using System.Net;
 using System.Net.Http.Json;
+using System.Text.Json;
 using ApplicationDemo.Services;
 using Microsoft.AspNetCore.Mvc.Testing;
 
@@ -40,5 +41,14 @@ public class ApiTests(WebApplicationFactory<Program> factory) : IClassFixture<We
         var response = await _client.PostAsJsonAsync("/api/productos", new CrearProductoRequest("", 10));
 
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task Raiz_DevuelveVersionComoEtiquetaDeImagen()
+    {
+        var info = await _client.GetFromJsonAsync<JsonElement>("/");
+
+        // Igual que la etiqueta de la imagen (1.0.7): sin cuarta parte ni hash del commit
+        Assert.Matches(@"^\d+\.\d+\.\d+$", info.GetProperty("version").GetString());
     }
 }

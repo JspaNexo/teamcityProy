@@ -50,11 +50,11 @@ Actualizar a otra versión (rolling update) y volver atrás:
 ```bash
 docker build -t applicationdemo:1.0.5 --build-arg VERSION=1.0.5 -f ApplicationDemo/Dockerfile .
 TAG=1.0.5 docker stack deploy --detach=false -c docker-stack.yml applicationdemo   # PowerShell: $env:TAG="1.0.5"; docker stack deploy ...
-curl http://localhost:8080/                                                        # "version" pasa a 1.0.5.0 réplica por réplica
+curl http://localhost:8080/                                                        # "version" pasa a 1.0.5 réplica por réplica
 docker service rollback applicationdemo_api
 ```
 
-`--build-arg VERSION` fija la versión del ensamblado, que es la que devuelve `GET /`; sin él la imagen reporta `1.0.0.0`.
+`--build-arg VERSION` fija la versión de la app, que es la que devuelve `GET /` (igual a la etiqueta de la imagen); sin él la imagen reporta `1.0.0`.
 
 Desplegar una versión publicada por TeamCity en el registro local en vez de la imagen local:
 
@@ -77,8 +77,10 @@ La configuración está en `.teamcity/settings.kts` (Kotlin DSL):
 2. **Imagen Docker Staging**: se dispara sola cuando *Build y Test* termina bien en `develop`, y cada paso tiene la condición `teamcity.build.branch equals develop`:
    1. *Docker Build Staging*: construye `localhost:5000/applicationdemo:<versión>` (`%env.APP_IMAGE_BUILD_NUMBER%`) con `--build-arg VERSION=<versión>`, para que `GET /` devuelva la versión desplegada.
    2. *Docker Push Staging*: la sube al registro local de TeamCity y borra la imagen del agente.
-   3. *Replace Staging Swarm Tokens*: `scripts/reemplazar-tokens-swarm.sh` genera `docker-stack.Temp.yml` con la imagen y la versión reemplazadas, y lo publica como artefacto.
-3. **Despliegue Swarm Staging**: se ejecuta a mano, desde cualquier rama. Descarga el `docker-stack.Temp.yml` del último build correcto de *Imagen Docker Staging* en `develop` y lo despliega con `scripts/desplegar-swarm.sh`; el número del build es la versión desplegada. Requiere que el Docker del agente sea manager de un Swarm (`docker swarm init`).
+   3. *Replace Staging Swarm Tokens*: `scripts/reemplazar-tokens-swarm.sh` genera `docker-stack.Temp.yml` con la imagen y la versión reemplazadas.
+
+   Publica como artefactos `docker-stack.Temp.yml` y `scripts/desplegar-swarm.sh`.
+3. **Despliegue Swarm Staging**: se ejecuta a mano. No tiene VCS root, así que no hace checkout ni hay rama que elegir: descarga el `docker-stack.Temp.yml` y el `desplegar-swarm.sh` del último build correcto de *Imagen Docker Staging* en `develop`, de modo que el archivo y la lógica de despliegue salen del mismo commit. El script comprueba que la imagen exista en el registro, numera el build con la versión desplegada y ejecuta `docker stack deploy`. Requiere que el Docker del agente sea manager de un Swarm (`docker swarm init`).
 4. **POS Express - Build y Test**: compila `Farmacorp.PosExpress/Farmacorp.PosExpress.slnx`, ejecuta sus pruebas y publica la consola como `Farmacorp.PosExpress-<versión>.zip`. Se dispara solo con cambios dentro de `Farmacorp.PosExpress/` en `main`; *Build y Test* ignora esa carpeta.
 
 ### Entorno
@@ -105,7 +107,11 @@ El `*` importa: TeamCity usa como nombre lógico de la rama la parte que coincid
 comparan la condición `teamcity.build.branch equals develop` y los triggers. Con `+:refs/heads/develop` (sin `*`)
 el nombre sería `refs/heads/develop` y los pasos de Staging se saltarían.
 
-*Despliegue Swarm Staging* no depende de la rama elegida: siempre toma lo último publicado en `develop`.
+Al lanzar a mano *Build y Test* o *Imagen Docker Staging* (botón *Run* → pestaña *Changes* → *Build branch*), elige
+`develop`: la rama por defecto es `main`, y en `main` los pasos de Staging se saltan por su condición y el build queda en
+verde sin generar imagen ni `docker-stack.Temp.yml`.
+
+*Despliegue Swarm Staging* no tiene rama: siempre toma lo último publicado en `develop`.
 
 Pasos para conectarlo:
 
