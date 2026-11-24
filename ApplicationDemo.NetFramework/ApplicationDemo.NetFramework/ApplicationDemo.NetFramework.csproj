@@ -1,0 +1,33 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <!-- ASP.NET clásico (System.Web) sobre .NET Framework 4.8: lo ejecuta IIS en un App Pool con CLR v4.0 -->
+    <PropertyGroup>
+        <TargetFramework>net48</TargetFramework>
+        <OutputType>Library</OutputType>
+        <!-- IIS busca los ensamblados en bin\ junto al Web.config: así la carpeta del proyecto ya es un sitio válido -->
+        <OutputPath>bin\</OutputPath>
+        <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+        <!-- GET / devuelve la InformationalVersion: sin el hash del commit, queda igual al número de build (1.0.7) -->
+        <IncludeSourceRevisionInInformationalVersion>false</IncludeSourceRevisionInInformationalVersion>
+        <!-- Carpeta que se copia a IIS: Web.config + bin\ -->
+        <SitioDir>$(MSBuildProjectDirectory)\..\publish\</SitioDir>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <Reference Include="System.Web" />
+        <!-- JavaScriptSerializer -->
+        <Reference Include="System.Web.Extensions" />
+    </ItemGroup>
+
+    <!-- msbuild -t:PublicarSitio: deja en $(SitioDir) solo lo que IIS necesita -->
+    <Target Name="PublicarSitio" DependsOnTargets="Build">
+        <ItemGroup>
+            <EnsambladosSitio Include="$(OutDir)*.dll" />
+        </ItemGroup>
+        <RemoveDir Directories="$(SitioDir)" />
+        <Copy SourceFiles="Web.config" DestinationFolder="$(SitioDir)" />
+        <Copy SourceFiles="@(EnsambladosSitio)" DestinationFolder="$(SitioDir)bin" />
+        <Message Importance="high" Text="Sitio IIS listo en $(SitioDir)" />
+    </Target>
+
+</Project>

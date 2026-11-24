@@ -1,9 +1,13 @@
 import jetbrains.buildServer.configs.kotlin.*
 import jetbrains.buildServer.configs.kotlin.buildFeatures.perfmon
+import jetbrains.buildServer.configs.kotlin.buildSteps.DotnetMsBuildStep
+import jetbrains.buildServer.configs.kotlin.buildSteps.PowerShellStep
 import jetbrains.buildServer.configs.kotlin.buildSteps.dockerCommand
 import jetbrains.buildServer.configs.kotlin.buildSteps.dotnetBuild
+import jetbrains.buildServer.configs.kotlin.buildSteps.dotnetMsBuild
 import jetbrains.buildServer.configs.kotlin.buildSteps.dotnetPublish
 import jetbrains.buildServer.configs.kotlin.buildSteps.dotnetTest
+import jetbrains.buildServer.configs.kotlin.buildSteps.powerShell
 import jetbrains.buildServer.configs.kotlin.buildSteps.script
 import jetbrains.buildServer.configs.kotlin.triggers.finishBuildTrigger
 import jetbrains.buildServer.configs.kotlin.triggers.vcs
@@ -17,6 +21,11 @@ import jetbrains.buildServer.configs.kotlin.triggers.vcs
  *                         y genera docker-stack.Temp.yml con los tokens reemplazados.
  *   3. DesplegarSwarm  -> despliega en el Docker Swarm del agente el último build correcto de Staging (manual),
  *                         con el stack y el script publicados por ese build.
+ *   4. DesplegarIis    -> despliega en el IIS del agente Windows el último build correcto de BuildAndTest en develop (manual).
+ *
+ * ApplicationDemo.NetFramework (la misma API en .NET Framework 4.8, solo en el agente Windows):
+ *   NetFrameworkBuildAndTest -> compila con el MSBuild de Visual Studio, ejecuta las pruebas y publica el sitio IIS.
+ *   NetFrameworkDesplegarIis -> despliega en IIS el último build correcto en develop (manual).
  *
  * Práctica 06 (Farmacorp POS Express):
  *   PosExpressBuildAndTest -> compila la solución N-Capas, ejecuta las pruebas y publica la consola.
@@ -28,8 +37,14 @@ object Ramas {
     val STAGING = "develop"
 }
 
+// Valores de teamcity.agent.jvm.os.family: Docker/Bash corren en el agente Linux; MSBuild de .NET Framework e IIS, en el Windows
+object Agentes {
+    val LINUX = "Linux"
+    val WINDOWS = "Windows"
+}
+
 project {
-    description = "App demo .NET 10 para practicar CI con TeamCity"
+    description = "App demo .NET 10 y .NET Framework 4.8 para practicar CI/CD con TeamCity (Docker Swarm e IIS)"
 
     // sequential crea la dependencia snapshot DockerImage -> BuildAndTest
     sequential {
@@ -38,6 +53,9 @@ project {
     }.buildTypes().forEach { buildType(it) }
 
     buildType(DesplegarSwarm)
+    buildType(DesplegarIis)
+    buildType(NetFrameworkBuildAndTest)
+    buildType(NetFrameworkDesplegarIis)
     buildType(PosExpressBuildAndTest)
 }
 
@@ -90,7 +108,11 @@ object BuildAndTest : BuildType({
     name = "Build y Test"
 
     buildNumberPattern = "1.0.%build.counter%"
-    artifactRules = "publish => ApplicationDemo-%build.number%.zip"
+    // El publish ya sirve para IIS (incluye el web.config); el script viaja con él para Despliegue IIS Staging
+    artifactRules = """
+        publish => ApplicationDemo-%build.number%.zip
+        scripts/desplegar-iis.ps1 => scripts
+    """.trimIndent()
 
     params {
         param("configuration", "Release")
@@ -129,8 +151,11 @@ object BuildAndTest : BuildType({
                 +:<default>
                 +:${Ramas.STAGING}
             """.trimIndent()
-            // Los cambios de POS Express los compila su propia configuración
-            triggerRules = "-:Farmacorp.PosExpress/**"
+            // Los cambios de POS Express y de la versión .NET Framework los compila su propia configuración
+            triggerRules = """
+                -:Farmacorp.PosExpress/**
+                -:ApplicationDemo.NetFramework/**
+            """.trimIndent()
         }
     }
 
@@ -211,6 +236,7 @@ object DockerImage : BuildType({
 
     requirements {
         exists("docker.server.version")
+        equals("teamcity.agent.jvm.os.family", Agentes.LINUX)
     }
 })
 
@@ -251,5 +277,146 @@ object DesplegarSwarm : BuildType({
 
     requirements {
         exists("docker.server.version")
+        equals("teamcity.agent.jvm.os.family", Agentes.LINUX)
     }
 })
+
+/*
+ * La misma API que ApplicationDemo, en ASP.NET clásico sobre .NET Framework 4.8.
+ * Necesita el agente Windows: compila con el MSBuild de Visual Studio 2026 (v18), como un proyecto .NET Framework
+ * tradicional, y publica Web.config + bin\ listos para IIS.
+ */
+object NetFrameworkBuildAndTest : BuildType({
+    name = "Framework - Build y Test"
+
+    buildNumberPattern = "1.0.%build.counter%"
+    artifactRules = """
+        ApplicationDemo.NetFramework/publish => ApplicationDemo.NetFramework-%build.number%.zip
+        scripts/desplegar-iis.ps1 => scripts
+    """.trimIndent()
+
+    params {
+        param("configuration", "Release")
+    }
+
+    vcs {
+        root(DslContext.settingsRoot)
+        cleanCheckout = true
+    }
+
+    steps {
+        dotnetMsBuild {
+            name = "Compilar (MSBuild)"
+            projects = "ApplicationDemo.NetFramework/ApplicationDemo.NetFramework.slnx"
+            version = DotnetMsBuildStep.MSBuildVersion.V18
+            targets = "Build"
+            configuration = "%configuration%"
+            args = "-restore -p:Version=%build.number%"
+        }
+        dotnetTest {
+            name = "Pruebas"
+            projects = "ApplicationDemo.NetFramework/ApplicationDemo.NetFramework.slnx"
+            configuration = "%configuration%"
+            skipBuild = true
+        }
+        dotnetMsBuild {
+            name = "Publicar sitio IIS"
+            projects = "ApplicationDemo.NetFramework/ApplicationDemo.NetFramework/ApplicationDemo.NetFramework.csproj"
+            version = DotnetMsBuildStep.MSBuildVersion.V18
+            // Target del .csproj: copia Web.config y bin\*.dll a ApplicationDemo.NetFramework/publish
+            targets = "PublicarSitio"
+            configuration = "%configuration%"
+            args = "-p:Version=%build.number%"
+        }
+    }
+
+    triggers {
+        vcs {
+            branchFilter = """
+                +:<default>
+                +:${Ramas.STAGING}
+            """.trimIndent()
+            triggerRules = """
+                +:ApplicationDemo.NetFramework/**
+                +:scripts/desplegar-iis.ps1
+            """.trimIndent()
+        }
+    }
+
+    requirements {
+        equals("teamcity.agent.jvm.os.family", Agentes.WINDOWS)
+    }
+})
+
+/*
+ * Despliegue en el IIS del agente Windows, igual que Despliegue Swarm Staging: sin VCS root ni trigger (manual,
+ * sin rama que elegir). Descarga del último build correcto en develop el sitio compilado y scripts/desplegar-iis.ps1,
+ * los dos del mismo commit, y ejecuta el script: crea App Pool y sitio si faltan, copia y comprueba /health.
+ * El agente debe correr como servicio de Windows (SYSTEM) para administrar IIS.
+ */
+open class DespliegueIis(
+    nombre: String,
+    origen: BuildType,
+    zip: String,
+    sitio: String,
+    puerto: Int,
+    runtime: String,
+    ensamblado: String
+) : BuildType({
+    name = nombre
+
+    params {
+        param("iis.sitio", sitio)
+        param("iis.puerto", "$puerto")
+    }
+
+    steps {
+        powerShell {
+            name = "Desplegar en IIS"
+            // El módulo WebAdministration de IIS es del PowerShell de Windows (5.1)
+            edition = PowerShellStep.Edition.Desktop
+            noProfile = true
+            scriptMode = file {
+                path = "despliegue/desplegar-iis.ps1"
+            }
+            scriptArgs = "-Origen sitio -Sitio %iis.sitio% -Puerto %iis.puerto% -Runtime $runtime -Ensamblado $ensamblado"
+        }
+    }
+
+    dependencies {
+        artifacts(origen) {
+            buildRule = lastSuccessful("+:${Ramas.STAGING}")
+            cleanDestination = true
+            artifactRules = """
+                $zip!** => sitio
+                scripts/desplegar-iis.ps1 => despliegue
+            """.trimIndent()
+        }
+    }
+
+    requirements {
+        equals("teamcity.agent.jvm.os.family", Agentes.WINDOWS)
+    }
+})
+
+// .NET 10 en IIS: App Pool "Sin código administrado"; la app la carga el ASP.NET Core Module (Hosting Bundle)
+object DesplegarIis : DespliegueIis(
+    nombre = "Despliegue IIS Staging",
+    origen = BuildAndTest,
+    zip = "ApplicationDemo-*.zip",
+    sitio = "ApplicationDemo",
+    puerto = 8081,
+    runtime = "NetCore",
+    ensamblado = "ApplicationDemo.dll"
+)
+
+// .NET Framework 4.8 en IIS: App Pool con CLR v4.0
+object NetFrameworkDesplegarIis : DespliegueIis(
+    nombre = "Framework - Despliegue IIS Staging",
+    origen = NetFrameworkBuildAndTest,
+    zip = "ApplicationDemo.NetFramework-*.zip",
+    sitio = "ApplicationDemoNetFramework",
+    puerto = 8082,
+    runtime = "NetFramework",
+    ensamblado = "bin/ApplicationDemo.NetFramework.dll"
+)

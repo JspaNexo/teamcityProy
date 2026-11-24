@@ -1,4 +1,7 @@
 <Solution>
+  <Folder Name="/ApplicationDemo.NetFramework/">
+    <Project Path="ApplicationDemo.NetFramework/ApplicationDemo.NetFramework/ApplicationDemo.NetFramework.csproj" />
+  </Folder>
   <Folder Name="/Solution Items/">
     <File Path="compose.yaml" />
     <File Path="docker-stack.yml" />
